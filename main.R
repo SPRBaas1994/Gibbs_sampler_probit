@@ -34,7 +34,7 @@ Z_cur = mu + A%*%rnorm(n) #initial guess
 estimate = c(0)
 for( i in seq(M+burnin)){
   print(i)
-  for(j in seq(n)){
+  for(j in seq(n-1)){
     mu_cond = mu[j] + regr_mat[j,]%*%(Z_cur[-j] - mu[-j])
     
     p_0 = pnorm(0, mu_cond, sqrt(sigma_cond[j]))
@@ -45,16 +45,16 @@ for( i in seq(M+burnin)){
     }
     Z_cur[j] = qnorm(min(1-1e-7, max(P,1e-7)), mean = mu_cond, sd =sqrt(sigma_cond[j]))
   }
-  
+  Z_cur[n] = rnorm(1, mean = mu[n] + regr_mat[n,]%*%(Z_cur[-n] - mu[-n]), sd =sqrt(sigma_cond[n]))
   if(i>burnin){
-    estimate = c(estimate, t(a)%*%Z_cur)
+    estimate = c(estimate, Z_cur[n]>0)
     # Z_vals[i-burnin,] = Z_cur
   }
 }
 t1 = toc()
 
 #plot convergence of the estimate
-plot(cumsum(estimate)/seq(M+1), type = 'l', xlab = '# iteration', ylab = 'estimate', lwd = 2)
+plot(cumsum(estimate)/seq(M+1), type = 'l', xlab = '# iterations', ylab = 'estimate', lwd = 2)
 
 #print the estimate
 range = qnorm(0.975)*std(estimate)/effectiveSize(estimate)
@@ -64,5 +64,4 @@ c(mean(estimate)-range, mean(estimate) +range)
 lb = sapply(Y, function(y){if(y == 1){0}else{-Inf}})
 ub = sapply(Y, function(y){if(y == 1){Inf}else{0}})
 pmvnorm(lb, ub, mean = mu, sigma = Sigma)
-
 
