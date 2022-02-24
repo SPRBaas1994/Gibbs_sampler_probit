@@ -52,12 +52,15 @@ for( i in seq(M+burnin)){
   }
 }
 t1 = toc()
-plot(cumsum(estimate)/seq(M+1), type = 'l', xlab = '# iterations', ylab = 'estimate', lwd = 2)
+
+#plot convergence of the estimate
+plot(cumsum(estimate)/seq(M+1), type = 'l', xlab = '# iteration', ylab = 'estimate', lwd = 2)
 
 #print the estimate
 range = qnorm(0.975)*std(estimate)/effectiveSize(estimate)
 c(mean(estimate)-range, mean(estimate) +range)
 
+#print the probability of the region induced by Y
 lb = sapply(Y, function(y){if(y == 1){0}else{-Inf}})
 ub = sapply(Y, function(y){if(y == 1){Inf}else{0}})
 pmvnorm(lb, ub, mean = mu, sigma = Sigma)
